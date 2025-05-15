@@ -1,9 +1,9 @@
 // Required dependencies
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt'); // Added bcrypt for password hashing
-require('dotenv').config();
 const url = require('url');
 
 const PORT = process.env.PORT || 3000;
