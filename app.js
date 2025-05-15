@@ -4,8 +4,9 @@ const mysql = require('mysql');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt'); // Added bcrypt for password hashing
 require('dotenv').config();
+const url = require('url');
 
-const PORT = 3000 || 4000;
+const PORT = process.env.PORT || 3000;
 const app = express();
 
 // Set up the view engine
@@ -15,7 +16,16 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 
 // Create DB connection using the connection URL
-const db = mysql.createConnection(process.env.DB_CONNECTION_URL);
+const dbUrl = process.env.DB_CONNECTION_URL;
+const parsedUrl = new URL(dbUrl);
+
+const db = mysql.createConnection({
+    host: parsedUrl.hostname,
+    port: parsedUrl.port,
+    user: parsedUrl.username,
+    password: parsedUrl.password,
+    database: parsedUrl.pathname.replace('/', '')
+});
 
 // Connect to the DB
 db.connect((err) => {
