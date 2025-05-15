@@ -1,6 +1,6 @@
 // Required dependencies
 const express = require('express');
-const mysql = require('mysql2/promise');
+const mysql = require('mysql');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt'); // Added bcrypt for password hashing
 require('dotenv').config();
@@ -14,29 +14,34 @@ app.set('view engine', 'ejs');
 // Middleware to parse request body
 app.use(express.urlencoded({ extended: true }));
 
-let db;
+// Create DB connection using the connection URL
+const db = mysql.createConnection(process.env.DB_CONNECTION_URL);
 
-// Database connection
-(async () => {
-    try{
-        const db = await mysql.createConnection(process.env.DB_CONNECTION_URL);
-        console.log('✅ Connected to the database');
-
-        const createTableQuery = `
-         CREATE TABLE IF NOT EXISTS form (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255),
-        email VARCHAR(255) UNIQUE,
-        password VARCHAR(255)
-      )`;
-
-        await db.execute(createTableQuery);
-        console.log('✅ Table "form" is ready')
-    } catch (err) {
-        console.log('❌ Error connecting to the database:', err);
+// Connect to the DB
+db.connect((err) => {
+    if (err) {
+        console.error('❌ Error connecting to the database:', err);
         process.exit(1);
     }
-})();
+    console.log('✅ Connected to the database');
+
+    const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS form (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255),
+            email VARCHAR(255) UNIQUE,
+            password VARCHAR(255)
+        )
+    `;
+
+    db.query(createTableQuery, (err, result) => {
+        if (err) {
+            console.error('❌ Error creating table:', err);
+        } else {
+            console.log('✅ Table "form" is ready');
+        }
+    });
+});
 
 
 // Route: Show signup page
